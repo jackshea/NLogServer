@@ -1,23 +1,31 @@
-﻿using System;
-using System.Text;
-using DotNetty.Buffers;
+﻿using DotNetty.Buffers;
 using DotNetty.Transport.Channels;
-using Newtonsoft.Json;
-using NLog;
+using System;
+using System.IO;
+using System.Text;
 
 namespace NLogServer
 {
     public class NLogHandler : ChannelHandlerAdapter
     {
+        private static StreamWriter sw;
+
+        static NLogHandler()
+        {
+            Console.WriteLine("Constructor");
+            var logFile = Path.Combine(Program.logRoot, string.Format(Program.logFileFormat, DateTime.Now));
+            var fs = new FileStream(logFile, FileMode.Append);
+            sw = new StreamWriter(fs);
+        }
+
         public override void ChannelRead(IChannelHandlerContext context, object message)
         {
-            var Logger = LogManager.GetLogger(context.Name);
             var buffer = message as IByteBuffer;
             if (buffer != null)
             {
-                var rawString = buffer.ToString(Encoding.UTF8);
-                var logMessage = JsonConvert.DeserializeObject<LogMessage>(rawString);
-                Logger.Log(logMessage.LogLevel, logMessage.Message);
+                var msg = buffer.ToString(Encoding.UTF8);
+                Console.Write(msg);
+                sw.Write(msg);
             }
         }
 
@@ -28,11 +36,5 @@ namespace NLogServer
             Console.WriteLine("Exception: " + exception);
             context.CloseAsync();
         }
-    }
-
-    public class LogMessage
-    {
-        public LogLevel LogLevel;
-        public string Message;
     }
 }

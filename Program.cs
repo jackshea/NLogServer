@@ -1,43 +1,41 @@
-﻿using System;
-using System.IO;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading.Tasks;
-using DotNetty.Codecs;
+﻿using DotNetty.Codecs;
 using DotNetty.Handlers.Logging;
-using DotNetty.Handlers.Tls;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
-using NLog;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace NLogServer
 {
 
     class Program
     {
+        private static int port;
+        public static string logRoot;
+        public static string logFileFormat;
+
+        public static void Main(string[] args)
+        {
+            var builder = new ConfigurationBuilder().SetBasePath(AppDomain.CurrentDomain.BaseDirectory).AddJsonFile("appsettings.json");
+            var configuration = builder.Build();
+            port = Convert.ToInt32(configuration["port"]);
+            logRoot = configuration["logRoot"];
+            logFileFormat = configuration["logFileFormat"];
+
+            RunServerAsync().Wait();
+        }
+
         static async Task RunServerAsync()
         {
-            const int Port = 2109;
-
             IEventLoopGroup bossGroup;
             IEventLoopGroup workerGroup;
 
             bossGroup = new MultithreadEventLoopGroup(1);
             workerGroup = new MultithreadEventLoopGroup();
 
-            var logger = LogManager.GetCurrentClassLogger();
-
-            logger.Info("Test Nlog level.");
-            logger.Trace("Trace");
-            logger.Debug("Debug");
-            logger.Info("Info");
-            logger.Warn("Warn");
-            logger.Error("Error");
-            logger.Fatal("Fatal");
-
-            logger.Info("NLog server starting...");
-            logger.Info($"listening port : {Port}");
-
+            Console.WriteLine("NLog server starting...");
 
             try
             {
@@ -58,8 +56,8 @@ namespace NLogServer
                         pipeline.AddLast("nlog", new NLogHandler());
                     }));
 
-                IChannel boundChannel = await bootstrap.BindAsync(Port);
-
+                IChannel boundChannel = await bootstrap.BindAsync(port);
+                Console.WriteLine($"listening on port : {port}");
                 Console.ReadLine();
 
                 await boundChannel.CloseAsync();
@@ -72,6 +70,5 @@ namespace NLogServer
             }
         }
 
-        static void Main() => RunServerAsync().Wait();
     }
 }
