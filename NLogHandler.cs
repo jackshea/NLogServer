@@ -13,8 +13,9 @@ namespace NLogServer
         static NLogHandler()
         {
             Console.WriteLine("Constructor");
+            Directory.CreateDirectory(Program.logRoot);
             var logFile = Path.Combine(Program.logRoot, string.Format(Program.logFileFormat, DateTime.Now));
-            var fs = new FileStream(logFile, FileMode.Append);
+            var fs = new FileStream(logFile, FileMode.OpenOrCreate, FileAccess.ReadWrite);
             sw = new StreamWriter(fs);
         }
 
@@ -34,6 +35,7 @@ namespace NLogServer
         public override void ExceptionCaught(IChannelHandlerContext context, Exception exception)
         {
             Console.WriteLine("Exception: " + exception);
+            sw.WriteLine("Exception: " + exception);
             context.CloseAsync();
         }
     }

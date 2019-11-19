@@ -9,7 +9,6 @@ using Microsoft.Extensions.Configuration;
 
 namespace NLogServer
 {
-
     class Program
     {
         private static int port;
@@ -24,16 +23,25 @@ namespace NLogServer
             logRoot = configuration["logRoot"];
             logFileFormat = configuration["logFileFormat"];
 
+            var p = GetArg("-p", args);
+            if (!string.IsNullOrEmpty(p))
+            {
+                port = Convert.ToInt32(p);
+            }
+
+            var argLogRoot = GetArg("-logRoot", args);
+            if (!string.IsNullOrEmpty(argLogRoot))
+            {
+                logRoot = argLogRoot;
+            }
+
             RunServerAsync().Wait();
         }
 
         static async Task RunServerAsync()
         {
-            IEventLoopGroup bossGroup;
-            IEventLoopGroup workerGroup;
-
-            bossGroup = new MultithreadEventLoopGroup(1);
-            workerGroup = new MultithreadEventLoopGroup();
+            IEventLoopGroup bossGroup = new MultithreadEventLoopGroup(1);
+            IEventLoopGroup workerGroup = new MultithreadEventLoopGroup();
 
             Console.WriteLine("NLog server starting...");
 
@@ -70,5 +78,17 @@ namespace NLogServer
             }
         }
 
+        private static string GetArg(string argName, string[] args)
+        {
+            for (int i = 0; i < args.Length - 1; i++)
+            {
+                if (args[i] == argName)
+                {
+                    return args[i + 1];
+                }
+            }
+
+            return null;
+        }
     }
 }
