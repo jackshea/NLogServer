@@ -15,10 +15,12 @@ namespace NLogServer
             Console.WriteLine("Constructor");
             Directory.CreateDirectory(Program.logRoot);
             var logFile = Path.Combine(Program.logRoot, string.Format(Program.logFileFormat, DateTime.Now));
+
             if (!File.Exists(logFile))
             {
-                File.Create(logFile);
+                File.Create(logFile).Dispose();
             }
+
             var fs = new FileStream(logFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
             sw = new StreamWriter(fs);
         }
