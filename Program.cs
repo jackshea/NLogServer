@@ -1,11 +1,10 @@
-﻿using DotNetty.Codecs;
-using DotNetty.Handlers.Logging;
+﻿using DotNetty.Handlers.Logging;
 using DotNetty.Transport.Bootstrapping;
 using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 
 namespace NLogServer
 {
@@ -58,10 +57,8 @@ namespace NLogServer
                     {
                         IChannelPipeline pipeline = channel.Pipeline;
                         pipeline.AddLast(new LoggingHandler("SRV-CONN"));
-                        pipeline.AddLast("framing-enc", new LengthFieldPrepender(2));
-                        pipeline.AddLast("framing-dec", new LengthFieldBasedFrameDecoder(ushort.MaxValue, 0, 2, 0, 2));
-
                         pipeline.AddLast("nlog", new NLogHandler());
+                        //pipeline.AddLast("nlog", new SimpleNLogHandler());
                     }));
 
                 IChannel boundChannel = await bootstrap.BindAsync(port);
