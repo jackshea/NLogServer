@@ -63,11 +63,15 @@ namespace NLogServer
 
                 IChannel boundChannel = await bootstrap.BindAsync(port);
                 Console.WriteLine($"listening on port : {port}");
-                while (Console.ReadLine() != "exit")
+                var readLine = string.Empty;
+                do
                 {
-                    Console.WriteLine("type 'exit' to close this app.");
-                }
-
+                    readLine = Console.ReadLine();
+                    if (!string.IsNullOrWhiteSpace(readLine) && readLine != "exit")
+                    {
+                        Console.WriteLine("type 'exit' to close this app.");
+                    }
+                } while (readLine != "exit");
                 await boundChannel.CloseAsync();
             }
             finally
