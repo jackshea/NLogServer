@@ -1,8 +1,14 @@
 # NLogServer
 NLog 的服务端，可从使用NLog的客户端收集日志。  
+配置客户端NLog的NetworkTarget使用。
 
->客户端参考：  
->https://github.com/jackshea/NLogClient  
+> 客户端参考：  
+> https://github.com/jackshea/NLogClient  
+
+Target配置参考:
+```
+<target xsi:type="Network" address="tcp://192.168.1.201:10086" name="network" newLine="true" onOverflow="Split" layout="${date}|${level:uppercase=true}|${message} ${exception}"/>
+```
   
 需要安装 dotnet, 版本为 .net 5  
 默认端口：10086  
