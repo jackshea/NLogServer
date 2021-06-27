@@ -4,6 +4,7 @@ using DotNetty.Transport.Channels;
 using DotNetty.Transport.Channels.Sockets;
 using Microsoft.Extensions.Configuration;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NLogServer
@@ -13,6 +14,7 @@ namespace NLogServer
         private static int port;
         public static string logRoot;
         public static string logFileFormat;
+        private static readonly AutoResetEvent _closingEvent = new AutoResetEvent(false);
 
         public static void Main(string[] args)
         {
@@ -34,7 +36,9 @@ namespace NLogServer
                 logRoot = argLogRoot;
             }
 
-            RunServerAsync().Wait();
+            RunServerAsync();
+            _closingEvent.WaitOne();
+            Console.WriteLine("Bye!");
         }
 
         static async Task RunServerAsync()
@@ -61,18 +65,16 @@ namespace NLogServer
                         //pipeline.AddLast("nlog", new SimpleNLogHandler());
                     }));
 
-                IChannel boundChannel = await bootstrap.BindAsync(port);
+                var boundChannel = await bootstrap.BindAsync(port);
                 Console.WriteLine($"listening on port : {port}");
-                var readLine = string.Empty;
-                do
+
+                Console.WriteLine("Press Ctrl + C to cancel!");
+                Console.CancelKeyPress += (s, a) =>
                 {
-                    readLine = Console.ReadLine();
-                    if (!string.IsNullOrWhiteSpace(readLine) && readLine != "exit")
-                    {
-                        Console.WriteLine("type 'exit' to close this app.");
-                    }
-                } while (readLine != "exit");
-                await boundChannel.CloseAsync();
+                    Console.WriteLine("Press Ctrl + C!");
+                    boundChannel.CloseAsync();
+                    _closingEvent.Set();
+                };
             }
             finally
             {
