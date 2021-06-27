@@ -15,6 +15,7 @@ namespace NLogServer
         public static string logRoot;
         public static string logFileFormat;
         private static readonly AutoResetEvent _closingEvent = new AutoResetEvent(false);
+        private static IChannel _boundChannel;
 
         public static void Main(string[] args)
         {
@@ -36,8 +37,7 @@ namespace NLogServer
                 logRoot = argLogRoot;
             }
 
-            RunServerAsync();
-            _closingEvent.WaitOne();
+            RunServerAsync().Wait();
             Console.WriteLine("Bye!");
         }
 
@@ -65,16 +65,18 @@ namespace NLogServer
                         //pipeline.AddLast("nlog", new SimpleNLogHandler());
                     }));
 
-                var boundChannel = await bootstrap.BindAsync(port);
+                _boundChannel = await bootstrap.BindAsync(port);
                 Console.WriteLine($"listening on port : {port}");
 
                 Console.WriteLine("Press Ctrl + C to cancel!");
                 Console.CancelKeyPress += (s, a) =>
                 {
                     Console.WriteLine("Press Ctrl + C!");
-                    boundChannel.CloseAsync();
                     _closingEvent.Set();
                 };
+
+                _closingEvent.WaitOne();
+                await _boundChannel.CloseAsync();
             }
             finally
             {
