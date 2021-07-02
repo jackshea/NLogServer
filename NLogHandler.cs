@@ -9,24 +9,25 @@ namespace NLogServer
     public class NLogHandler : ChannelHandlerAdapter
     {
         private static StreamWriter sw;
+        private static DateTime fileDate;
 
         static NLogHandler()
         {
             Console.WriteLine("Constructor");
             Directory.CreateDirectory(Program.logRoot);
-            var logFile = Path.Combine(Program.logRoot, string.Format(Program.logFileFormat, DateTime.Now));
 
-            if (!File.Exists(logFile))
-            {
-                File.Create(logFile).Dispose();
-            }
-
-            var fs = new FileStream(logFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
-            sw = new StreamWriter(fs);
+            OpenLogFileStream();
         }
 
         public override void ChannelRead(IChannelHandlerContext context, object message)
         {
+            if (DateTime.Now.DayOfYear != fileDate.DayOfYear || DateTime.Now.Year != fileDate.Year)
+            {
+                sw.Flush();
+                sw.Close();
+                sw.Dispose();
+                OpenLogFileStream();
+            }
             var buffer = message as IByteBuffer;
             if (buffer != null)
             {
@@ -46,6 +47,21 @@ namespace NLogServer
             Console.WriteLine("Exception: " + exception);
             sw.WriteLine("Exception: " + exception);
             context.CloseAsync();
+        }
+
+        public static void OpenLogFileStream()
+        {
+            var logFile = Path.Combine(Program.logRoot, string.Format(Program.logFileFormat, DateTime.Now));
+
+            if (!File.Exists(logFile))
+            {
+                File.Create(logFile).Dispose();
+            }
+
+            var fs = new FileStream(logFile, FileMode.Append, FileAccess.Write, FileShare.ReadWrite);
+            sw = new StreamWriter(fs);
+            sw.AutoFlush = true;
+            fileDate = DateTime.Now;
         }
     }
 }
