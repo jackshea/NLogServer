@@ -33,7 +33,7 @@ namespace NLogServer
             {
                 var msg = buffer.ToString(Encoding.UTF8);
                 Console.Write(msg);
-                sw.Write(msg);
+                sw.WriteAsync(msg);
             }
         }
 
