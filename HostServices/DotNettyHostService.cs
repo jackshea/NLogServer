@@ -8,6 +8,7 @@ using NLogServer;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using DotNetty.Codecs;
 
 namespace COTDHost
 {
@@ -44,7 +45,9 @@ namespace COTDHost
                 .ChildHandler(new ActionChannelInitializer<IChannel>(channel =>
                 {
                     IChannelPipeline pipeline = channel.Pipeline;
+                    pipeline.AddLast(new LineBasedFrameDecoder(short.MaxValue, false, true));
                     pipeline.AddLast(new NLogHandler(_configuration));
+
                     //pipeline.AddLast("framing-enc", new LengthFieldPrepender(ByteOrder.LittleEndian, 4, 0, false));
                     //pipeline.AddLast("framing-dec", new LengthFieldBasedFrameDecoder(ByteOrder.LittleEndian, int.MaxValue, 0, 4, 0, 0, true));
                     //pipeline.AddLast(new LoggingHandler("SRV-CONN"));
