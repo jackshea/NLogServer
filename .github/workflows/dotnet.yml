@@ -25,9 +25,11 @@ jobs:
       run: dotnet test --no-build --verbosity normal
     - name: Publish
       run: dotnet publish -c Release
+    - name: 'Tar files'
+      run: tar -zcvf NLogServer.zip bin/Release/net5.0/publish/
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
         name: NLogServer
-        path: bin/Release/net5.0/publish/
+        path: NLogServer.zip
         retention-days: 90
