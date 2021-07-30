@@ -1,0 +1,11 @@
+﻿version: '3'
+services: 
+    nlog_server:
+        container_name: nlog_server
+        image: jackshea/nlog_server
+        ports: 
+            - 10086:10086
+        volumes: 
+            - /var/log/nlog_server:/app/logs jackshea/nlog_server
+            - /etc/localtime:/etc/localtime
+        restart: always
