@@ -3,6 +3,7 @@ using DotNetty.Transport.Channels;
 using System;
 using System.IO;
 using System.Text;
+using Microsoft.Extensions.Configuration;
 
 namespace NLogServer
 {
@@ -10,11 +11,14 @@ namespace NLogServer
     {
         private static StreamWriter sw;
         private static DateTime fileDate;
+        private static string logRoot;
+        private static string logFileFormat;
 
-        static NLogHandler()
+        public NLogHandler(IConfiguration config)
         {
-            Console.WriteLine("Constructor");
-            Directory.CreateDirectory(Program.logRoot);
+            logRoot = config["logRoot"];
+            logFileFormat = config["logFileFormat"];
+            Directory.CreateDirectory(logRoot);
 
             OpenLogFileStream();
         }
@@ -51,7 +55,7 @@ namespace NLogServer
 
         public static void OpenLogFileStream()
         {
-            var logFile = Path.Combine(Program.logRoot, string.Format(Program.logFileFormat, DateTime.Now));
+            var logFile = Path.Combine(logRoot, string.Format(logFileFormat, DateTime.Now));
 
             if (!File.Exists(logFile))
             {
