@@ -26,10 +26,10 @@ jobs:
     - name: Publish
       run: dotnet publish -c Release
     - name: 'Tar files'
-      run: tar -cvf NLogServer.tar bin/Release/net5.0/publish/
+      run: tar -zcvf NLogServer.tgz -C bin/Release/net5.0/publish/ .
     - name: 'Upload Artifact'
       uses: actions/upload-artifact@v2
       with:
         name: NLogServer
-        path: NLogServer.tar
+        path: NLogServer.tgz
         retention-days: 90
